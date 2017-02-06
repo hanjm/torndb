@@ -1,5 +1,7 @@
 *.pyc
 *.pyo
+.python-version
+.idea
 *~
 /build/
 /dist/

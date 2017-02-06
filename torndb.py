@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""A lightweight wrapper around MySQLdb.
+"""A lightweight wrapper around pymysql.
 
 Originally part of the Tornado framework.  The tornado.database module
 is slated for removal in Tornado 3.0, and it is now available separately
@@ -28,27 +28,19 @@ import logging
 import os
 import time
 
-try:
-    import MySQLdb.constants
-    import MySQLdb.converters
-    import MySQLdb.cursors
-except ImportError:
-    try:
-        import pymysql as MySQLdb
-    except ImportError:
-        # If MySQLdb isn't available this module won't actually be useable,
-        # but we want it to at least be importable on readthedocs.org,
-        # which has limitations on third-party modules.
-        if 'READTHEDOCS' in os.environ:
-            MySQLdb = None
-        else:
-            raise
+import pymysql
+import pymysql.constants
 
-version = "0.3"
-version_info = (0, 3, 0, 0)
+version = "0.4"
+version_info = (0, 4, 0, 0)
+
+# Alias some common pymysql exceptions
+IntegrityError = pymysql.IntegrityError
+OperationalError = pymysql.OperationalError
+
 
 class Connection(object):
-    """A lightweight wrapper around MySQLdb DB-API connections.
+    """A lightweight wrapper around pymysql DB-API connections.
 
     The main value we provide is wrapping rows in a dict/object so that
     columns can be accessed by name. Typical usage::
@@ -68,19 +60,19 @@ class Connection(object):
     any other mode including blank (None) thereby explicitly clearing the SQL mode.
 
     Arguments read_timeout and write_timeout can be passed using kwargs, if
-    MySQLdb version >= 1.2.5 and MySQL version > 5.1.12.
+    pymysql version >= 1.2.5
     """
+
     def __init__(self, host, database, user=None, password=None,
-                 max_idle_time=7 * 3600, connect_timeout=0,
-                 time_zone="+0:00", charset = "utf8", sql_mode="TRADITIONAL",
+                 max_idle_time=7 * 3600,
+                 time_zone="+0:00", charset="utf8", sql_mode="TRADITIONAL",
                  **kwargs):
         self.host = host
         self.database = database
         self.max_idle_time = float(max_idle_time)
 
-        args = dict(conv=CONVERSIONS, use_unicode=True, charset=charset,
-                    db=database, init_command=('SET time_zone = "%s"' % time_zone),
-                    connect_timeout=connect_timeout, sql_mode=sql_mode, **kwargs)
+        args = dict(use_unicode=True, charset=charset,
+                    db=database, init_command=('SET time_zone = "%s"' % time_zone), sql_mode=sql_mode, **kwargs)
         if user is not None:
             args["user"] = user
         if password is not None:
@@ -120,13 +112,13 @@ class Connection(object):
     def reconnect(self):
         """Closes the existing database connection and re-opens it."""
         self.close()
-        self._db = MySQLdb.connect(**self._db_args)
+        self._db = pymysql.connect(**self._db_args)
         self._db.autocommit(True)
 
     def iter(self, query, *parameters, **kwparameters):
         """Returns an iterator for the given query and parameters."""
         self._ensure_connected()
-        cursor = MySQLdb.cursors.SSCursor(self._db)
+        cursor = pymysql.cursors.SSCursor(self._db)
         try:
             self._execute(cursor, query, parameters, kwparameters)
             column_names = [d[0] for d in cursor.description]
@@ -227,7 +219,7 @@ class Connection(object):
         # case by preemptively closing and reopening the connection
         # if it has been idle for too long (7 hours by default).
         if (self._db is None or
-            (time.time() - self._last_use_time > self.max_idle_time)):
+                (time.time() - self._last_use_time > self.max_idle_time)):
             self.reconnect()
         self._last_use_time = time.time()
 
@@ -246,25 +238,9 @@ class Connection(object):
 
 class Row(dict):
     """A dict that allows for object-like property access syntax."""
+
     def __getattr__(self, name):
         try:
             return self[name]
         except KeyError:
             raise AttributeError(name)
-
-if MySQLdb is not None:
-    # Fix the access conversions to properly recognize unicode/binary
-    FIELD_TYPE = MySQLdb.constants.FIELD_TYPE
-    FLAG = MySQLdb.constants.FLAG
-    CONVERSIONS = copy.copy(MySQLdb.converters.conversions)
-
-    field_types = [FIELD_TYPE.BLOB, FIELD_TYPE.STRING, FIELD_TYPE.VAR_STRING]
-    if 'VARCHAR' in vars(FIELD_TYPE):
-        field_types.append(FIELD_TYPE.VARCHAR)
-
-    for field_type in field_types:
-        CONVERSIONS[field_type] = [(FLAG.BINARY, str)] + CONVERSIONS[field_type]
-
-    # Alias some common MySQL exceptions
-    IntegrityError = MySQLdb.IntegrityError
-    OperationalError = MySQLdb.OperationalError

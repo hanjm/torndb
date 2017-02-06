@@ -1,35 +1,28 @@
 Torndb
 ======
 
-Unmaintained
-------------
+Fork from https://github.com/bdarnell/torndb(not actively maintained)
+---------------------------------------------------------------------
 
-This package is not actively maintained, and since it exists primarily
-for backwards compatibility with the module provided in Tornado prior
-to version 3.0, I do not intend to make major changes or merge pull
-requests that do so.  New projects are encouraged to choose a different
-database package. Anyone interested in producing an updated version of
-`torndb` is welcome to create a fork (under a new name)
+Because the origin package github.com/bdarnell/torndb is not suported Python 3
+and it is not actively maintained. the original author do not intend to make major
+changes or merge pull requests.
+then i fork it and ported it to Python 3
+
 
 Description
 -----------
 
-Torndb is a simple wrapper around `MySQLdb` that originally appeared
+Torndb is a simple wrapper around `pymysql` that originally appeared
 in Tornado (http://www.tornadoweb.org).  It is being moved into
 a separate package for Tornado 3.0.
-
-Limitations
------------
-
-Torndb does not support Python 3, or any database drivers other than
-`MySQLdb` or `pymysql`.
 
 Installation
 ------------
 
-``pip install torndb``
+``pip install git+https://github.com/hanjm/torndb``
 
 Documentation
 -------------
-
+just port it to python 3, so the api is not changed
 http://torndb.readthedocs.org
