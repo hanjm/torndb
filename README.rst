@@ -1,13 +1,13 @@
 Torndb
 ======
 
-Fork from https://github.com/bdarnell/torndb(not actively maintained)
----------------------------------------------------------------------
+Fork from https://github.com/bdarnell/torndb (not actively maintained)
+----------------------------------------------------------------------
 
-Because the origin package github.com/bdarnell/torndb is not suported Python 3
-and it is not actively maintained. the original author do not intend to make major
-changes or merge pull requests.
-then i fork it and ported it to Python 3
+Because the origin package(github.com/bdarnell/torndb)is not support Python 3
+and it is not actively maintained.
+the original author said that he do not intend to make major changes or merge pull requests.
+I fork it and ported it to Python 3.
 
 
 Description

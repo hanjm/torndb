@@ -29,7 +29,6 @@ import os
 import time
 
 import pymysql
-import pymysql.constants
 
 version = "0.4"
 version_info = (0, 4, 0, 0)
